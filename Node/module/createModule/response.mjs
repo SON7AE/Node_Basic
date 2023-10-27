@@ -6,8 +6,10 @@ function read() {
     return decrypt("data")
 }
 
-console.log("We are in the response module!")
+// COMMON JS 방식
+// module.exports = {
+//     read,
+// }
 
-module.exports = {
-    read,
-}
+// ECMA SCRIPT 방식
+export { read }

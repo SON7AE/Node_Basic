@@ -7,6 +7,7 @@ function send(url, data) {
     console.log(`${encryptedData} is being sent to ${url}`)
 }
 
+// COMMON JS 방식
 module.exports = {
     send,
 }
