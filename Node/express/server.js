@@ -30,3 +30,7 @@ app.get("/users/:userId", (req, res) => {
 app.listen(PORT, () => {
     console.log(`Running on port ${PORT}.`)
 })
+
+// res.json() vs res.send()
+// res.json()과 res.send()를 사용하는 것은 기능상으로 거의 동일히다.
+// 그러면 res.send()를 이용해서 object를 보내도 되는 건지 아래에서 살펴보자.
