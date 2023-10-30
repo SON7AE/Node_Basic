@@ -2,8 +2,8 @@ const express = require("express")
 const PORT = 4000
 const app = express()
 
-const userController = require("./controllers/users.controller")
-const postController = require("./controllers/post.controller")
+const usersRouter = require("./routes/users.router")
+const postsRouter = require("./routes/posts.router")
 
 // 미들웨어
 app.use(express.json())
@@ -14,18 +14,11 @@ app.use((req, res, next) => {
     next()
 
     const diffTijme = Date.now() - start
-    console.log(`end: ${req.method} ${req.url} ${diffTijme}ms`)
+    console.log(`end: ${req.method} ${req.baseUrl}${req.url} ${diffTijme}ms`)
 })
 
-app.get("/", (req, res) => {
-    res.send("HELLO WORLD!")
-})
-
-app.get("/users", userController.getUsers)
-app.get("/users/:userId", userController.getUser)
-app.post("/users", userController.postUser)
-
-app.get("/posts", postController.getPost)
+app.use("/users", usersRouter)
+app.use("/posts", postsRouter)
 
 app.listen(PORT, () => {
     console.log(`Running on port ${PORT}.`)
