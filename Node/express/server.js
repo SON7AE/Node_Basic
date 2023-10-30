@@ -7,6 +7,17 @@ const Users = [
     { id: 1, name: "Jennifer" },
 ]
 
+// 미들웨어
+app.use((req, res, next) => {
+    const start = Date.now()
+    console.log(`start: ${req.method} ${req.url}`)
+
+    next()
+
+    const diffTijme = Date.now() - start
+    console.log(`end: ${req.method} ${req.url} ${diffTijme}ms`)
+})
+
 app.get("/", (req, res) => {
     res.send("HELLO WORLD!")
 })
@@ -58,7 +69,7 @@ app.listen(PORT, () => {
 // next 미들웨어 기능은 일반적으로 next라는 변수로 표시된다.
 
 // 미들웨어를 등록해줄 때, use 메서드를 사용한다.
-app.use((req, res, next) => {
-    console.log("Time:", Date.now())
-    next() // next(): 다음 미들웨어로 이동한다.
-})
+// app.use((req, res, next) => {
+//     console.log("Time:", Date.now())
+//     next() // next(): 다음 미들웨어로 이동한다.
+// })
