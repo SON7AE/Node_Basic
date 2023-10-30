@@ -2,8 +2,8 @@ const express = require("express")
 const PORT = 4000
 const app = express()
 
-import { getUser, getUsers, postUser } from "./controllers/users.controller"
-import { getPost } from "./controllers/post.controller"
+const userController = require("./controllers/users.controller")
+const postController = require("./controllers/post.controller")
 
 // 미들웨어
 app.use(express.json())
@@ -21,11 +21,11 @@ app.get("/", (req, res) => {
     res.send("HELLO WORLD!")
 })
 
-app.get("/users", getUsers)
-app.get("/users/:userId", getUser)
-app.post("/users", postUser)
+app.get("/users", userController.getUsers)
+app.get("/users/:userId", userController.getUser)
+app.post("/users", userController.postUser)
 
-app.get("/posts", getPost)
+app.get("/posts", postController.getPost)
 
 app.listen(PORT, () => {
     console.log(`Running on port ${PORT}.`)
