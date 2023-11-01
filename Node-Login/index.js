@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken")
 const PORT = 4000
 const app = express()
 const secretText = "superSecret"
+const refreshSecretText = "supersuperSecret"
 
 const posts = [
     {
@@ -21,13 +22,21 @@ app.use(express.json())
 app.post("/login", (req, res) => {
     const userName = req.body.userName
     const user = { name: userName }
+    const refreshTokens = []
 
     // JWT를 이용해서 토큰 생성하기 payload + secretText
-    const accessToken = jwt.sign(user, secretText)
+    // 유효기간 추가
+    const accessToken = jwt.sign(user, secretText, { expiresIn: "30s" })
+    // JWT를 이용해서 refreshToken 생성
+    const refreshToken = jtw.sign(user, refreshSecretText, { expiresIn: "1d" })
+    refreshTokens.push(refreshToken)
+    // refreshToken을 쿠키에 넣어주기
+    res.cookie("jwt", refreshToken, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 })
+
     res.json({ accessToken: accessToken })
 })
 
-app.get("/posts", (req, res) => {
+app.get("/posts", authMiddleware, (req, res) => {
     res.json(posts)
 })
 
@@ -53,3 +62,21 @@ function authMiddleware(req, res, next) {
 app.listen(PORT, () => {
     console.log("Listening on port: " + PORT)
 })
+
+// Refresh Token 생성하기
+// 현재 앱에서 accessToken 하나만 있다면, 이것을 가지고 계속 인증이 필요한 요청을 보낼 수가 있다.
+// 로그인을 한 번 더 해서 다른 토큰을 받고 그 이전에 토큰을 이용해도 아직 유효하다.
+
+// 하나의 토큰을 탈취하면, 탈취한 토큰으로 계속 요청을 보내게 될 수 있다.
+// 이걸 위해서 토큰의 유효시간을 줄일 수 있다.
+
+// 유효시간을 너무 짧게 하면 ==> 자동으로 로그아웃돼어 너무 자주 로그인을 다시 해야한다.
+// 유효시간을 너무 길게 하면 ==> 토큰에 유효시간을 주는 이유가 사라지게 된다. 토큰이 탈취당하면 긴 유효시간이 끝날 때가지 계속 탈취당한 토근을 사용 가능하게 한다.
+
+// Refresh Token
+// 위와 같은 문제점을 보완하기 위해서 refreshToken을 사용하게 된다.
+// refreshToken도 accessToken처럼 JWT를 이용해서 발급 가능하며, 주로 accessToken의 유효시간은 짧게 해주며
+// refreshToken의 유효시간은 길게 해준다. 그래서 accessToken의 유효시간이 다 지나면 refreshToken을 이용해서 새로운 accessToken을 발급해준다.
+
+// accessToken: accessToken은 리소스에 접근하기 위해서 사용되는 토큰이다.
+// refreshToken: 기존에 클라이언트가 가지고 있던 AccessToken이 만료되었을 때, accessToken을 새로 발급받기 위해 사용한다.
