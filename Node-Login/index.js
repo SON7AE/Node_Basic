@@ -1,5 +1,6 @@
 const express = require("express")
 const jwt = require("jsonwebtoken")
+const cookieParser = require("cookie-parser")
 
 const PORT = 4000
 const app = express()
@@ -18,6 +19,7 @@ const posts = [
 ]
 
 app.use(express.json())
+app.use(cookieParser())
 
 app.post("/login", (req, res) => {
     const userName = req.body.userName
@@ -28,7 +30,7 @@ app.post("/login", (req, res) => {
     // 유효기간 추가
     const accessToken = jwt.sign(user, secretText, { expiresIn: "30s" })
     // JWT를 이용해서 refreshToken 생성
-    const refreshToken = jtw.sign(user, refreshSecretText, { expiresIn: "1d" })
+    const refreshToken = jwt.sign(user, refreshSecretText, { expiresIn: "1d" })
     refreshTokens.push(refreshToken)
     // refreshToken을 쿠키에 넣어주기
     res.cookie("jwt", refreshToken, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 })
@@ -58,6 +60,29 @@ function authMiddleware(req, res, next) {
         next()
     })
 }
+
+app.get("/refresh", (req, res) => {
+    // npm install cookie-parser
+    console.log("req.cookies", req.cookies)
+    // cookies 가져오기
+    const cookies = req.cookies
+
+    if (!cookies?.jwt) return res.send(403)
+
+    const refreshToken = cookies.jwt
+    // refreshToken이 데이터베이스에 있는 토큰인지 확인
+    if (!refreshToken.includes(refreshToken)) {
+        return res.sendStatus(403)
+    }
+
+    // token이 유효한 토큰인지 확인
+    jwt.verify(refreshToken, refreshSecretText, (error, user) => {
+        if (error) return res.sendStatus(403)
+        // 새로운 accessToken 생성하기
+        const accessToken = jwt.sign({ name: user.name }, secretText, { expiresIn: "30s" })
+        res.json({ accessToken })
+    })
+})
 
 app.listen(PORT, () => {
     console.log("Listening on port: " + PORT)
