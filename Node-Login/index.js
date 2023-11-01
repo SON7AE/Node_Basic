@@ -17,6 +17,7 @@ const posts = [
         title: "POST 02",
     },
 ]
+let refreshTokens = []
 
 app.use(express.json())
 app.use(cookieParser())
@@ -24,7 +25,6 @@ app.use(cookieParser())
 app.post("/login", (req, res) => {
     const userName = req.body.userName
     const user = { name: userName }
-    const refreshTokens = []
 
     // JWT를 이용해서 토큰 생성하기 payload + secretText
     // 유효기간 추가
