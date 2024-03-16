@@ -3,9 +3,35 @@ const { default: mongoose } = require('mongoose')
 const passport = require('passport')
 const path = require('path')
 const USER = require('./models/users.model')
+const cookieSession = require('cookie-session')
 
 const app = express()
 const PORT = 4000
+
+// ----------------------------------------------------------------------------------------------------
+
+const cookieEncryptionKey = 'superSecret-key'
+app.use(
+    cookieSession({
+        name: 'cookie-session-name',
+        keys: [cookieEncryptionKey],
+    })
+)
+
+// register regenerate & save after the cookieSession middleware initialization
+app.use(function (request, response, next) {
+    if (request.session && !request.session.regenerate) {
+        request.session.regenerate = (cb) => {
+            cb()
+        }
+    }
+    if (request.session && !request.session.save) {
+        request.session.save = (cb) => {
+            cb()
+        }
+    }
+    next()
+})
 
 // ----------------------------------------------------------------------------------------------------
 // view engine setup
@@ -16,7 +42,7 @@ app.set('view engine', 'ejs')
 
 app.use(passport.initialize())
 app.use(passport.session())
-app.use('./config/passport')
+require('./config/passport')
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
@@ -35,7 +61,9 @@ mongoose
     })
 
 // ----------------------------------------------------------------------------------------------------
-
+app.get('/', (req, res) => {
+    res.render('index')
+})
 app.get('/login', (req, res) => {
     res.render('login')
 })
@@ -67,7 +95,7 @@ app.post('/login', (req, res, next) => {
             if (error) return next(error)
             res.redirect('/') // 메인 페이지 이동
         })
-    })
+    })(req, res, next)
 })
 
 // ----------------------------------------------------------------------------------------------------

@@ -16,17 +16,17 @@ const userSchema = mongoose.Schema({
     },
 })
 
-userSchema.methods.comparePassword = function (plainPassword, callback) {
+userSchema.methods.comparePassword = function (plainPassword, cb) {
     // bcript compare
     // plainPassword => client가 입력한 비밀번호
     // this.password => 데이터베이스에 있는 비밀번호
     if (plainPassword === this.password) {
-        callback(null, true)
+        cb(null, true)
     } else {
-        callback(null, false)
+        cb(null, false)
     }
     // bcript compare error
-    return callback({ error: 'error' })
+    return cb({ error: 'error' })
 }
 
 const USER = mongoose.model('USER', userSchema)
